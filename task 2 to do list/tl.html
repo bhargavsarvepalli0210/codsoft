@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>To-Do List</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="tl.css" />
+  </head>
+  <body>
+    <section class="container">
+      <div class="heading">
+        <img class="heading__img" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/756881/laptop.svg">
+        <h1 class="heading__title">To-Do List</h1>
+      </div>
+      <form class="form">
+        <div>
+          <label class="form__label" for="todo">~ MY TASKS ~</label>
+          <input class="form__input"
+               type="text"
+               id="todo"
+               name="to-do"
+               size="30"
+               required>
+          <button class="button"><span>Submit</span></button>
+        </div>
+      </form>
+      <div>
+        <ul class="toDoList">
+        </ul>
+      </div>
+    </section>
+    <script src="script.js"></script>
+  </body>
+</html>
+<script>
+(() => {
+  let toDoListArray = [];
+  const form = document.querySelector(".form");
+  const input = form.querySelector(".form__input");
+  const ul = document.querySelector(".toDoList");
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    let itemId = String(Date.now());
+    let toDoItem = input.value;
+    addItemToDOM(itemId, toDoItem);
+    addItemToArray(itemId, toDoItem);
+    input.value = '';
+  });
+
+  ul.addEventListener('click', e => {
+    const id = e.target.getAttribute('data-id');
+    if (!id) return;
+    
+    if (e.target.classList.contains('edit-button')) {
+      editItem(id);
+    } else if (e.target.classList.contains('save-button')) {
+      saveItem(id);
+    } else {
+      removeItemFromDOM(id);
+      removeItemFromArray(id);
+    }
+  });
+
+  function addItemToDOM(itemId, toDoItem) {
+    const li = document.createElement('li');
+    li.setAttribute("data-id", itemId);
+    li.innerHTML = `<span>${toDoItem}</span> <button class="edit-button" data-id="${itemId}">Edit</button>`;
+    ul.appendChild(li);
+  }
+
+  function addItemToArray(itemId, toDoItem) {
+    toDoListArray.push({ itemId, toDoItem });
+    console.log(toDoListArray);
+  }
+
+  function editItem(id) {
+    const li = document.querySelector(`[data-id="${id}"]`);
+    const span = li.querySelector('span');
+    const editButton = li.querySelector('.edit-button');
+    const text = span.innerText;
+    
+    span.style.display = 'none';
+    editButton.style.display = 'none';
+    
+    const input = document.createElement('input');
+    input.value = text;
+    
+    const saveButton = document.createElement('button');
+    saveButton.innerText = 'Save';
+    saveButton.className = 'save-button';
+    saveButton.setAttribute('data-id', id);
+    
+    li.appendChild(input);
+    li.appendChild(saveButton);
+  }
+
+  function saveItem(id) {
+    const li = document.querySelector(`[data-id="${id}"]`);
+    const span = li.querySelector('span');
+    const input = li.querySelector('input');
+    const saveButton = li.querySelector('.save-button');
+    
+    span.innerText = input.value;
+    
+    span.style.display = 'inline';
+    saveButton.style.display = 'inline';
+    
+    li.removeChild(input);
+    li.removeChild(saveButton);
+    
+    // Update the item in the array
+    const itemIndex = toDoListArray.findIndex(item => item.itemId === id);
+    if (itemIndex !== -1) {
+      toDoListArray[itemIndex].toDoItem = input.value;
+    }
+  }
+
+  function removeItemFromDOM(id) {
+    const li = document.querySelector('[data-id="' + id + '"]');
+    ul.removeChild(li);
+  }
+
+  function removeItemFromArray(id) {
+    toDoListArray = toDoListArray.filter(item => item.itemId !== id);
+    console.log(toDoListArray);
+  }
+})();
+</script>
+</html>
